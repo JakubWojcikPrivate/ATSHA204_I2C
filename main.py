@@ -101,14 +101,16 @@ if __name__ == '__main__':
         # read_buf = b'\x77\x01\x30\x00\x00\x00\x00\x00'
 
         del (read_buf)
+
+        #   https://github.com/cryptotronix/atsha204-i2c/blob/master/atsha204-i2c.c#L326
+
         # read_buf = bytearray([3,
         #                       6,
         #                       2,
         #                       1,
         #                       0,
         #                       0])
-        read_buf = bytearray([3,
-                              2])
+        read_buf = bytearray([3,0,0,0])
         print(read_buf)
         i2c.readfrom_into(100, read_buf)  # ping the board and test
         print(format_response(read_buf))
