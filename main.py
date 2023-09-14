@@ -136,6 +136,9 @@ if __name__ == '__main__':
         read_buf[6] = crc16(read_buf[1:5])[0]
         read_buf[7] = crc16(read_buf[1:5])[1]
 
+        response_buf = bytearray()
+
         print(read_buf)
         i2c.readfrom_into(100, read_buf)  # ping the board and test
+        i2c.writeto_then_readfrom(100, read_buf, response_buf, stop=True)
         print(format_response(read_buf))
