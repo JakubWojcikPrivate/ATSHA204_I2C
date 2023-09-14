@@ -9,6 +9,7 @@ import time
 import logging
 import numpy as np
 import binascii
+import crcmod
 import at_repo
 # Setting environment variable, if you will now, check will fail
 os.environ["BLINKA_FT232H"] = "1"
@@ -102,15 +103,38 @@ if __name__ == '__main__':
 
         del (read_buf)
 
+        # read_cmd[0] = 0x03; / *Command
+        # byte * /
+        # read_cmd[1] = 0x07; / *length * /
+        # read_cmd[2] = 0x02; / *Read
+        # command
+        # opcode * /
+        # read_cmd[3] = param1;
+        # read_cmd[4] = cpu_to_le16(addr) & 0xFF;
+        # read_cmd[5] = cpu_to_le16(addr) >> 8;
+        #
+        # crc = atsha204_crc16( & read_cmd[1], 5);
+        #
+        #
+        # read_cmd[6] = cpu_to_le16(crc) & 0xFF;
+        # read_cmd[7] = cpu_to_le16(crc) >> 8;
+
         #   https://github.com/cryptotronix/atsha204-i2c/blob/master/atsha204-i2c.c#L326
 
-        # read_buf = bytearray([3,
-        #                       6,
-        #                       2,
-        #                       1,
-        #                       0,
-        #                       0])
-        read_buf = bytearray([3,0,0,0])
+        read_buf = bytearray([0x03,     # [0] Command byte
+                              0x07,     # [1] Count
+                              0x02,     # [2] Read command opcode
+                              0x80,     # [3] papram 1 low
+                              0x00,     # [4] papram 2 high
+                              0x00,     # [5] papram 2
+                              0x00,     # [6] CRC16[0x8005] low
+                              0x00,     # [7] CRC16[0x8005] high
+                              ])
+
+        crc16 = crcmod.mkCrcFun(0x18005, 0xFFFF, True)
+        read_buf[6] = crc16(read_buf[1:5])[0]
+        read_buf[7] = crc16(read_buf[1:5])[1]
+
         print(read_buf)
         i2c.readfrom_into(100, read_buf)  # ping the board and test
         print(format_response(read_buf))
