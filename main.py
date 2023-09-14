@@ -132,6 +132,7 @@ if __name__ == '__main__':
                               ])
 
         crc16 = crcmod.mkCrcFun(0x18005, 0xFFFF, True)
+
         read_buf[6] = crc16(read_buf[1:5])[0]
         read_buf[7] = crc16(read_buf[1:5])[1]
 
